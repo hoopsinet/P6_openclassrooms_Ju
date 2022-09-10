@@ -1,12 +1,12 @@
-const sauces = require('../models/sauces');
+const saucesModels = require('../models/sauces');
 const fs = require('fs');
 const { json } = require('express');
 
 exports.createSauces = (req, res, next) => {
-    const saucesObject = JSON.parse(req.body.sauces);
+    const saucesObject = JSON.parse(req.body.sauce);
     delete saucesObject._id;
     delete saucesObject._userId;
-    const sauces = new sauces({
+    const sauces = new saucesModels({
         ...saucesObject, 
         userId : req.auth.userId,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -22,10 +22,10 @@ exports.createSauces = (req, res, next) => {
 };
 
 exports.getOneSauces = (req, res, next) => {
-    sauces.findOne({
+    saucesModels.findOne({
         _id: req.params.id
     }).then((sauces) => {
-        res.satus(200).json(sauces);
+        res.status(200).json(sauces);
     }
     ).catch(
         (error) => {
@@ -35,19 +35,19 @@ exports.getOneSauces = (req, res, next) => {
 }
 
 exports.getAllSauces = (req, res, next) => {
-    sauces.find()
+    saucesModels.find()
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({ error }));
 };
 
 exports.modifySauces = (req, res, next) => {
     const saucesObject = req.file ? {
-        ...JSON.parse(req.body.sauces),
+        ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
   
     delete saucesObject._userId;
-    sauces.findOne({_id: req.params.id})
+    saucesModels.findOne({_id: req.params.id})
         .then((sauces) => {
             if (sauces.userId != req.auth.userId) {
                 res.status(401).json({ message : 'Non autorisé'});
@@ -62,7 +62,7 @@ exports.modifySauces = (req, res, next) => {
         });
  };
 
- exports.deleteSauces = (req, res, next) => {
+ exports.deleteSaucesModels = (req, res, next) => {
     sauces.findOne({ _id: req.params.id})
         .then(sauces => {
             if (sauces.userId != req.auth.userId) {
