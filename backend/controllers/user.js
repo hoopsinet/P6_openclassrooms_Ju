@@ -4,6 +4,11 @@ const jwt = require("jsonwebtoken");
 const userModels = require("../models/user");
 
 exports.signup = (req, res, next) => {
+
+if (req.body.password === "") {
+    return res.status(400).json({ error: 'message erreur'})
+}
+
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
@@ -52,3 +57,4 @@ exports.login = (req, res, next) => {
     })
     .catch((error) => res.status(500).json({ error }));
 };
+

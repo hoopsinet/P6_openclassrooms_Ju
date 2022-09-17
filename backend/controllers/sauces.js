@@ -45,32 +45,21 @@ exports.modifySauces = (req, res, next) => {
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
-  
-    delete saucesObject._userId;
-    saucesModels.findOne({_id: req.params.id})
-        .then((sauces) => {
-            if (sauces.userId != req.auth.userId) {
-                res.status(401).json({ message : 'Non autorisé'});
-            } else {
-                sauces.updateOne({ _id: req.params.id}, { ...saucesObject, _id: req.params.id})
-                .then(() => res.status(200).json({message : 'Objet modifié!'}))
-                .catch(error => res.status(401).json({ error }));
-            }
-        })
-        .catch((error) => {
-            res.status(400).json({ error });
-        });
- };
+
+    saucesModels.updateOne({ _id: req.params.id}, { ...saucesObject, _id: req.params.id})
+    .then(() => res.status(200).json({message : 'Objet modifié!'}))
+    .catch(error => res.status(401).json({ error }));
+};
 
  exports.deleteSaucesModels = (req, res, next) => {
-    sauces.findOne({ _id: req.params.id})
-        .then(sauces => {
-            if (sauces.userId != req.auth.userId) {
+    saucesModels.findOne({ _id: req.params.id})
+        .then(saucesModels => {
+            if (saucesModels.userId != req.auth.userId) {
                 res.status(401).json({message: 'Not authorized'});
             } else {
                 const filename = sauces.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
-                    sauces.deleteOne({_id: req.params.id})
+                    saucesModels.deleteOne({_id: req.params.id})
                         .then(() => { res.status(200).json({message: 'Objet supprimé !'})})
                         .catch(error => res.status(401).json({ error }));
                 });
@@ -80,3 +69,38 @@ exports.modifySauces = (req, res, next) => {
             res.status(500).json({ error });
         });
  };
+
+ exports.likeOrDislikeSauce = (req, res, next) => {
+    let likeStatus = req.body.like
+    saucesModels.findOne({ _id: req.params.id })
+        .then(saucesModels => {
+            if(likeStatus === 1 && !saucesModels.usersLiked.includes(req.body.userId)) {
+                saucesModels.usersLiked.push(req.body.userId)
+                saucesModels.likes++
+                saucesModels.save()
+                .then(() => res.status(200).json({ message: 'Un utilisateur like votre sauce!'}))
+            }
+
+            if (likeStatus === 0 && saucesModels.usersLiked.includes(req.body.userId)) { 
+                saucesModels.usersLiked.pull(req.body.userId)
+                saucesModels.likes--
+                saucesModels.save()
+                .then(() => res.status(200).json({ message: 'lutilisateur dislike votre sauce'}))
+
+            } else if (likeStatus === 0 && saucesModels.usersDisliked.includes(req.body.userId)) { 
+                saucesModels.usersDisliked.pull(req.body.userId)
+                saucesModels.dislikes--
+                saucesModels.save()
+                .then(() => res.status(200).json({ message: 'lutilisateur ne dislike plus la sauce!'}))
+            }
+
+            if(likeStatus === -1 && !saucesModels.usersDisliked.includes(req.body.userId)) {
+                saucesModels.usersDisliked.push(req.body.userId)
+                saucesModels.dislikes++
+                saucesModels.save()
+                .then(() => res.status(200).json({ message: 'The user dislikes the sauce!'}))
+
+            }
+        }) 
+        .catch(error => res.status(400).json({ error }));
+};
