@@ -73,27 +73,28 @@ exports.modifySauces = (req, res, next) => {
  exports.likeOrDislikeSauce = (req, res, next) => {
     let likeStatus = req.body.like
     saucesModels.findOne({ _id: req.params.id })
-        .then(saucesModels => {
+        .then(saucesModels => { 
+            // Si like = 1 et que l'utilisateur n'a pas encore like, on ajoute +1 like et on sauvegarde.
             if(likeStatus === 1 && !saucesModels.usersLiked.includes(req.body.userId)) {
                 saucesModels.usersLiked.push(req.body.userId)
                 saucesModels.likes++
                 saucesModels.save()
                 .then(() => res.status(200).json({ message: 'Un utilisateur like votre sauce!'}))
             }
-
+            // Si il à déjà liké et qu'il rappuie sur le like, ça retire le like.
             if (likeStatus === 0 && saucesModels.usersLiked.includes(req.body.userId)) { 
                 saucesModels.usersLiked.pull(req.body.userId)
                 saucesModels.likes--
                 saucesModels.save()
                 .then(() => res.status(200).json({ message: 'lutilisateur dislike votre sauce'}))
-
+                // Si l'utilisateur à dislike une sauce, et qu'il reclique sur dislike ça enléve son dislike.
             } else if (likeStatus === 0 && saucesModels.usersDisliked.includes(req.body.userId)) { 
                 saucesModels.usersDisliked.pull(req.body.userId)
                 saucesModels.dislikes--
                 saucesModels.save()
                 .then(() => res.status(200).json({ message: 'lutilisateur ne dislike plus la sauce!'}))
             }
-
+            // Si l'utilisateur n'a jamais dislike et clique dessus, cela fait -1 
             if(likeStatus === -1 && !saucesModels.usersDisliked.includes(req.body.userId)) {
                 saucesModels.usersDisliked.push(req.body.userId)
                 saucesModels.dislikes++

@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
+// const helmet = require("helmet");
 
 //importation du router
 const saucesRoutes = require('./routes/sauces');
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+// app.use(helmet());
 
 app.use('/api/auth', userRoutes);
 app.use('/api/sauces', saucesRoutes);
