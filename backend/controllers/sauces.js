@@ -17,7 +17,7 @@ exports.createSauces = (req, res, next) => {
     });
 
     sauces.save()
-    .then(() => { res.status(201);json({message : 'Sauce créée !'})})
+    .then(() => { res.status(201).json({message : 'Sauce créée !'})})
     .catch(error => { res.status(400).json({error})})
 };
 
@@ -57,7 +57,7 @@ exports.modifySauces = (req, res, next) => {
             if (saucesModels.userId != req.auth.userId) {
                 res.status(401).json({message: 'Not authorized'});
             } else {
-                const filename = sauces.imageUrl.split('/images/')[1];
+                const filename = saucesModels.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
                     saucesModels.deleteOne({_id: req.params.id})
                         .then(() => { res.status(200).json({message: 'Objet supprimé !'})})
@@ -66,6 +66,7 @@ exports.modifySauces = (req, res, next) => {
             }
         })
         .catch( error => {
+            console.log(error)
             res.status(500).json({ error });
         });
  };
