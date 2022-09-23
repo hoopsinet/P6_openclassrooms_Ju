@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -8,7 +9,7 @@ const saucesRoutes = require('./routes/sauces');
 const userRoutes = require('./routes/user');
 
 //connexion BDD
-mongoose.connect('mongodb+srv://hoops:Jac132406@hottakes.orklzuu.mongodb.net/?retryWrites=true&w=majority',
+mongoose.connect(process.env.DB_LINK,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
