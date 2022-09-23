@@ -2,6 +2,7 @@ const saucesModels = require('../models/sauces');
 const fs = require('fs');
 const { json } = require('express');
 
+// créer notre sauce dans un formulaire
 exports.createSauces = (req, res, next) => {
     const saucesObject = JSON.parse(req.body.sauce);
     delete saucesObject._id;
@@ -39,7 +40,7 @@ exports.getAllSauces = (req, res, next) => {
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({ error }));
 };
-
+// Modifier le nom/l'image etc.. de la sauce
 exports.modifySauces = (req, res, next) => {
     const saucesObject = req.file ? {
         ...JSON.parse(req.body.sauce),
@@ -50,7 +51,7 @@ exports.modifySauces = (req, res, next) => {
     .then(() => res.status(200).json({message : 'Objet modifié!'}))
     .catch(error => res.status(401).json({ error }));
 };
-
+// Pour supprimer définitivement une sauce 
  exports.deleteSaucesModels = (req, res, next) => {
     saucesModels.findOne({ _id: req.params.id})
         .then(saucesModels => {
@@ -75,6 +76,11 @@ exports.modifySauces = (req, res, next) => {
     let likeStatus = req.body.like
     saucesModels.findOne({ _id: req.params.id })
         .then(saucesModels => { 
+            // >>>>>>>>>>>> si like >= 1 et que le user a déjà liké <<<<<<<<<<<<<<<<<
+            if(likeStatus >= 1 && saucesModels.usersLiked.includes(req.body.userId)){
+                res.status(401).json({message: 'vous avez déjà liké cette sauce'});
+        }
+            
             // Si like = 1 et que l'utilisateur n'a pas encore like, on ajoute +1 like et on sauvegarde.
             if(likeStatus === 1 && !saucesModels.usersLiked.includes(req.body.userId)) {
                 saucesModels.usersLiked.push(req.body.userId)
@@ -89,6 +95,8 @@ exports.modifySauces = (req, res, next) => {
                 saucesModels.save()
                 .then(() => res.status(200).json({ message: 'lutilisateur dislike votre sauce'}))
                 // Si l'utilisateur à dislike une sauce, et qu'il reclique sur dislike ça enléve son dislike.
+            } else if(likeStatus >= 1 && saucesModels.usersDisliked.includes(req.body.userId)){
+                res.status(401).json({message: 'vous avez déjà disliké cette sauce'});
             } else if (likeStatus === 0 && saucesModels.usersDisliked.includes(req.body.userId)) { 
                 saucesModels.usersDisliked.pull(req.body.userId)
                 saucesModels.dislikes--
