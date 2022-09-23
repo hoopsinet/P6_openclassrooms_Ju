@@ -76,13 +76,13 @@ exports.modifySauces = (req, res, next) => {
     let likeStatus = req.body.like
     saucesModels.findOne({ _id: req.params.id })
         .then(saucesModels => { 
-            // >>>>>>>>>>>> si like >= 1 et que le user a déjà liké <<<<<<<<<<<<<<<<<
-            if(likeStatus >= 1 && saucesModels.usersLiked.includes(req.body.userId)){
+            // >>>>>>>>>>>> si like >= 1 et que le user a déjà liké on renvoie une erreur<<<<<<<<<<<<<<<<<
+            if (likeStatus >= 1 && saucesModels.usersLiked.includes(req.body.userId)){
                 res.status(401).json({message: 'vous avez déjà liké cette sauce'});
         }
             
             // Si like = 1 et que l'utilisateur n'a pas encore like, on ajoute +1 like et on sauvegarde.
-            if(likeStatus === 1 && !saucesModels.usersLiked.includes(req.body.userId)) {
+            if (likeStatus === 1 && !saucesModels.usersLiked.includes(req.body.userId)) {
                 saucesModels.usersLiked.push(req.body.userId)
                 saucesModels.likes++
                 saucesModels.save()
@@ -94,7 +94,7 @@ exports.modifySauces = (req, res, next) => {
                 saucesModels.likes--
                 saucesModels.save()
                 .then(() => res.status(200).json({ message: 'lutilisateur dislike votre sauce'}))
-                // Si l'utilisateur à dislike une sauce, et qu'il reclique sur dislike ça enléve son dislike.
+                // Si dislike >= 1 et que l'utilisateur a déjà disliké, on renvoie une erreur ensuite Si l'utilisateur à dislike une sauce, et qu'il reclique sur dislike ça enléve son dislike.
             } else if(likeStatus >= 1 && saucesModels.usersDisliked.includes(req.body.userId)){
                 res.status(401).json({message: 'vous avez déjà disliké cette sauce'});
             } else if (likeStatus === 0 && saucesModels.usersDisliked.includes(req.body.userId)) { 
@@ -104,7 +104,7 @@ exports.modifySauces = (req, res, next) => {
                 .then(() => res.status(200).json({ message: 'lutilisateur ne dislike plus la sauce!'}))
             }
             // Si l'utilisateur n'a jamais dislike et clique dessus, cela fait -1 
-            if(likeStatus === -1 && !saucesModels.usersDisliked.includes(req.body.userId)) {
+            if (likeStatus === -1 && !saucesModels.usersDisliked.includes(req.body.userId)) {
                 saucesModels.usersDisliked.push(req.body.userId)
                 saucesModels.dislikes++
                 saucesModels.save()
